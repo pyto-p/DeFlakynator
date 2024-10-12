@@ -1,0 +1,35 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Logs and databases
+*.log
+*.sqlite3
+
+# Data and results directories
+/common/classification/model_perf/plots/*.png
+/unixcoder-fft/plots/
+/unixcoder-fft/results/
+/unixcoder-fft/results_og/
+/unixcoder-fft/trained_model/
+/unixcoder-fft/trained_model_og/
+/unixcoder-fft/faiss_index.bin
+
+/unixcoder-peft/logs/
+/unixcoder-peft/results/
+/unixcoder-peft/results_og/
+/unixcoder-peft/trained_model/
+/unixcoder-peft/trained_model_og/
+/unixcoder-peft/faiss_index.bin
+
+# MacOS-specific files
+.DS_Store
+
+# Jupyter Notebooks checkpoints
+.ipynb_checkpoints/
+
+# Ignore environment files
+.vscode/settings.json
+
+data

@@ -31,5 +31,3 @@ __pycache__/
 
 # Ignore environment files
 .vscode/settings.json
-
-data

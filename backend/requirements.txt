@@ -6,7 +6,7 @@ matplotlib
 datasets
 faiss-cpu
 codebleu
-git+https://github.com/tree-sitter/tree-sitter-javascript.git
+# git+https://github.com/tree-sitter/tree-sitter-javascript.git
 tree-sitter
 flask
 flask_cors

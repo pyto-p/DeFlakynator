@@ -23,7 +23,7 @@ device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 dataset_path = '../data/50-input_output.json'
 raw_dataset = load_dataset(dataset_path)
 
-save_directory = './trained_model/peft_unixcoder'
+save_directory = './trained_model_og/peft_unixcoder'
 
 if os.path.exists(save_directory):
     print("Loading the saved fine-tuned model...")
@@ -114,7 +114,7 @@ while True:
     output = predict_fix_category(user_input, model, tokenizer, device)
     print(f"\nPredicted Fix Category: \n{output}")
 
-    dataset = load_dataset('./dataset/6000-merged_dataset.json')
+    dataset = load_dataset('../data/6000-merged_dataset.json')
 
     tokenizer = RobertaTokenizerFast.from_pretrained('microsoft/unixcoder-base')
     model = AutoModel.from_pretrained('microsoft/unixcoder-base')

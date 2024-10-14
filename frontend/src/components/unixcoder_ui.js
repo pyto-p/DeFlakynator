@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { FaPaperPlane, FaCopy } from "react-icons/fa";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { nightOwl } from "react-syntax-highlighter/dist/esm/styles/prism";
-import "../../src/components/unixcoder_ui.scss";
+import { FaPaperPlane, FaCopy, FaCode } from "react-icons/fa";
+import CodeContent from "./CodeContent";
+import "../../src/components/Unixcoder_ui.scss";
 import bgImage from "../components/bg-image.png";
+import { useNavigate } from "react-router-dom";
 
 function App() {
   const [code, setCode] = useState("");
@@ -15,8 +15,10 @@ function App() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPrediction, setShowPrediction] = useState(false);
-  const [copySuccess, setCopySuccess] = useState("");
+  const [peftCopySuccess, setPeftCopySuccess] = useState(false);
+  const [fftCopySuccess, setFftCopySuccess] = useState(false);
   const textareaRef = useRef(null);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -56,18 +58,29 @@ function App() {
   // submit using enter key
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault(); // Prevent adding a new line
-      handleSubmit(e); // Trigger form submission
+      e.preventDefault();
+      handleSubmit(e);
     }
   };
 
   // copy code
-  const copyToClipboard = (text) => {
+  const copyToClipboard = (text, type) => {
+    // Extract code enclosed in triple backticks
+    const codeMatches = text.match(/```(.*?)```/s);
+    const codeToCopy = codeMatches
+      ? codeMatches[1].replace(/^\S+\n/, "").trim()
+      : "";
+
     navigator.clipboard
-      .writeText(text)
+      .writeText(codeToCopy)
       .then(() => {
-        setCopySuccess("Copied!"); 
-        setTimeout(() => setCopySuccess(""), 2000); // Hide message after 2 seconds
+        if (type === "peft") {
+          setPeftCopySuccess(true);
+          setTimeout(() => setPeftCopySuccess(false), 2000);
+        } else if (type === "fft") {
+          setFftCopySuccess(true);
+          setTimeout(() => setFftCopySuccess(false), 2000);
+        }
       })
       .catch((err) => {
         console.error("Failed to copy: ", err);
@@ -90,6 +103,16 @@ function App() {
   useEffect(() => {
     adjustTextareaHeight();
   }, []);
+
+  // / Function to open /codebleu in a new tab
+  function openCodebleuPage() {
+    // Save the generatedFix and peftGeneratedFix to localStorage
+    localStorage.setItem("generatedFix", generatedFix);
+    localStorage.setItem("peftGeneratedFix", peftGeneratedFix);
+
+    // Open the Codebleu page in a new tab
+    window.open("/codebleu", "_blank");
+  }
 
   return (
     <div
@@ -120,15 +143,18 @@ function App() {
                   category and generated fix.
                 </p>
               </div>
+              <button className="codebleu-btn" onClick={openCodebleuPage}>
+                <span className="display-icon">
+                  <FaCode />
+                </span>
+                <span className="full-text">CodeBleau</span>
+              </button>
             </div>
             <div className="prediction-area">
               <div
                 className={`prediction-section ${loading ? "loading" : ""}`}
                 style={{ backgroundColor: "#212529", color: "#f0f0f0" }}
               >
-                {/* {copySuccess && (
-                  <span className="copy-message">{copySuccess}</span>
-                )} */}
                 <h2> PEFT-LoRA</h2>
                 <div className="category-output-container">
                   <h3 className="category-text">Predicted Fix Category: </h3>
@@ -145,22 +171,16 @@ function App() {
                     <span className="language-label">JavaScript</span>
                     <button
                       className="copy-button"
-                      onClick={() => copyToClipboard(peftGeneratedFix)}
+                      onClick={() => copyToClipboard(peftGeneratedFix, "peft")}
                     >
-                      Copy Code <FaCopy />
+                      {peftCopySuccess ? "Copied!" : "Copy Code"}
+                      <FaCopy />
                     </button>
                   </div>
-                  <div className="code-content">
-                    <SyntaxHighlighter
-                      language="javascript"
-                      style={nightOwl}
-                      wrapLongLines={true}
-                    >
-                      {loading
-                        ? "Generating fix..."
-                        : peftGeneratedFix || "Generated fix will go here."}
-                    </SyntaxHighlighter>
-                  </div>
+                  <CodeContent
+                    generatedFix={peftGeneratedFix}
+                    loading={loading}
+                  />
                 </div>
               </div>
 
@@ -184,22 +204,13 @@ function App() {
                     <span className="language-label">JavaScript</span>
                     <button
                       className="copy-button"
-                      onClick={() => copyToClipboard(generatedFix)}
+                      onClick={() => copyToClipboard(generatedFix, "fft")}
                     >
-                      Copy Code <FaCopy />
+                      {fftCopySuccess ? "Copied!" : "Copy Code"}
+                      <FaCopy />
                     </button>
                   </div>
-                  <div className="code-content">
-                    <SyntaxHighlighter
-                      language="javascript"
-                      style={nightOwl}
-                      wrapLongLines={true}
-                    >
-                      {loading
-                        ? "Generating fix..."
-                        : generatedFix || "Generated fix will go here."}
-                    </SyntaxHighlighter>
-                  </div>
+                  <CodeContent generatedFix={generatedFix} loading={loading} />
                 </div>
               </div>
             </div>

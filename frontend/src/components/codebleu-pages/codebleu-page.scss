@@ -1,0 +1,96 @@
+$bg-color: #15191df2;
+$text-area: #212529;
+$text-color: #e1e8f5;
+$border: #e1e8f569;
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.fft-content {
+  margin-top: 30px;
+  display: flex;
+  overflow-y: auto;
+  flex-direction: column;
+  padding: 60px;
+  text-align: center;
+
+  .fft-layout {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+
+    .generated-fix {
+      flex: 1;
+      margin-right: 10px;
+      padding: 40px;
+      border: 1px solid $border;
+      border-radius: 5px;
+      background-color: $bg-color;
+      overflow-y: auto;
+    }
+
+    .reference-input {
+      flex: 1;
+      margin-left: 10px;
+      padding: 40px;
+      border: 1px solid $border;
+      border-radius: 5px;
+      background-color: $bg-color;
+      flex-direction: column; // Ensure children stack vertically
+      justify-content: flex-start; // Align items at the start
+
+      textarea {
+        width: 97%;
+        height: 350px;
+        resize: none;
+        padding: 10px;
+        border: 1px solid $border;
+        border-radius: 4px;
+        background-color: $text-area;
+        color: $text-color;
+        line-height: 22px;
+        font-size: 16px;
+      }
+
+      button {
+        margin-top: 10px;
+        padding: 10px 15px;
+        background-color: #4a90e2;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+
+        &:hover {
+          background-color: #3c78b5;
+        }
+
+        &:disabled {
+          background-color: #ccc;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+
+  .results {
+    padding: 10px 5px;
+    border: 1px solid $border;
+    border-radius: 5px;
+    background-color: $bg-color;
+
+    h3 {
+      margin-top: 0;
+    }
+
+    p {
+      margin: 5px 0;
+    }
+  }
+}

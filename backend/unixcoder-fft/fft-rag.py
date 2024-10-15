@@ -1,9 +1,10 @@
 import os
 import torch
+from codebleu import calc_codebleu
 from transformers import RobertaForSequenceClassification, RobertaTokenizerFast, AutoModel
-from dataset import load_dataset
-from prediction import predict_fix_category
-from generation.rag_generator import build_faiss_index, rag_generate_solution, setup_llama
+from common.classification.dataset import load_dataset
+from common.classification.prediction import predict_fix_category
+from common.generation.rag_generator import build_faiss_index, rag_generate_solution, setup_llama
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import warnings
@@ -23,7 +24,7 @@ model, tokenizer = None, None
 # Load the fine-tuned model and tokenizer
 def load_model_and_tokenizer():
     global model, tokenizer
-    save_directory = './trained_model/fft_unixcoder'
+    save_directory = './trained_model_og/fft_unixcoder'
 
     if os.path.exists(save_directory):
         print("Loading the saved fine-tuned model...")
@@ -51,15 +52,12 @@ def api_predict():
         # Predict fix category
         fix_category = predict_fix_category(js_code, model, tokenizer, device)
 
-        # Load the dataset
-        dataset = load_dataset('./dataset/6000-merged_dataset.json')
+        # Load the dataset for embeddings
+        dataset = load_dataset("../data/6000-merged_dataset.json")
 
         # Load UniXCoder for embeddings
         embedding_tokenizer = RobertaTokenizerFast.from_pretrained('microsoft/unixcoder-base')
         embedding_model = AutoModel.from_pretrained('microsoft/unixcoder-base')
-
-        # Set environment variable to avoid OpenMP conflict
-        os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
         # Build or load the FAISS index and dataset
         faiss_index, indexed_data = build_faiss_index(dataset, embedding_model, embedding_tokenizer, index_file="faiss_index.bin", data_file="indexed_data.pkl")
@@ -70,12 +68,61 @@ def api_predict():
         # Generate the fix using the full RAG pipeline
         generated_fix = rag_generate_solution(js_code, fix_category, embedding_model, embedding_tokenizer, faiss_index, indexed_data, llama_model)
 
+        # Extract predicted code from the generated fix
+        predicted_code = re.findall(r"```(.*?)```", generated_fix, re.DOTALL)
+
+        # Initialize predicted_code safely
+        if predicted_code:
+            predicted_code = predicted_code[0].strip()  # Take the first block and strip whitespace
+        else:
+            predicted_code = ""  # Handle case where no code block is found
+
+        predicted_code = predicted_code.replace('javascript', '')
+
+        # Return the generated fix
         return jsonify({
             "predictedCategory": fix_category,
-            "generatedFix": generated_fix
+            "generatedFix": generated_fix,
+            "predictedCode": predicted_code
         })
 
     except Exception as e:
+        print(f"Error occurred: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/compute_codebleu', methods=['POST'])
+def api_compute_codebleu():
+    try:
+        data = request.json
+        predicted_code = data.get('predicted_code')
+        reference_code = data.get('reference_code')
+
+        if not predicted_code:
+            return jsonify({"error": "No predicted code provided"}), 400
+
+        if not reference_code:
+            return jsonify({"error": "No reference code provided"}), 400
+
+        # Calculate CodeBLEU
+        formatted_reference = reference_code.strip()
+        result = calc_codebleu([formatted_reference], [predicted_code], lang="javascript", weights=(0.10, 0.10, 0.40, 0.40), tokenizer=None)
+
+        if any(value is None for value in result.values()):
+            raise ValueError("CodeBLEU calculation returned None values.")
+
+        # Return the CodeBLEU result
+        return jsonify({
+            "codebleu": {
+                "ngram_match_score": result['ngram_match_score'],
+                "weighted_ngram_match_score": result['weighted_ngram_match_score'],
+                "syntax_match": result['syntax_match_score'],
+                "semantic_match": result['dataflow_match_score'],
+                "codebleu_score": result['codebleu']
+            }
+        })
+
+    except Exception as e:
+        print(f"Error occurred: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 # Main entry point for the Flask app

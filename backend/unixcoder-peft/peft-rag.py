@@ -41,7 +41,6 @@ def api_predict():
     try:
         data = request.json
         js_code = data.get('code')
-        reference_code = data.get('reference_code')
 
         if not js_code:
             return jsonify({"error": "No JavaScript code provided"}), 400
@@ -55,9 +54,6 @@ def api_predict():
         # Load UniXCoder for embeddings
         embedding_tokenizer = RobertaTokenizerFast.from_pretrained('microsoft/unixcoder-base')
         embedding_model = AutoModel.from_pretrained('microsoft/unixcoder-base')
-
-        # Set the environment variable to avoid OpenMP conflict
-        os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
         # Build or load the FAISS index and dataset
         faiss_index, indexed_data = build_faiss_index(dataset, embedding_model, embedding_tokenizer, index_file="faiss_index.bin", data_file="indexed_data.pkl")
@@ -78,50 +74,53 @@ def api_predict():
             predicted_code = ""  # Handle case where no code block is found
 
         predicted_code = predicted_code.replace('javascript', '')
-        print('predicted: ', predicted_code)
 
-        # If reference_code is provided, calculate CodeBLEU
-        if reference_code:
-            formatted_reference = reference_code.strip()  # Strip reference code only if provided
-            print("Formatted Reference Code:", formatted_reference)  # Log formatted reference code
-            print("Predicted Code:", predicted_code)
-
-            # Calculate CodeBLEU
-            print("Calculating CodeBLEU...")
-            result = calc_codebleu([formatted_reference], [predicted_code], lang="javascript", weights=(0.10, 0.10, 0.40, 0.40), tokenizer=None)
-
-            # Check the result
-            if any(value is None for value in result.values()):
-                raise ValueError("CodeBLEU calculation returned None values.")
-
-            # Print CodeBLEU result for debugging
-            print("CodeBLEU Result:", result)
-
-            # Include CodeBLEU results in the response
-            response = {
-                "predictedCategory": fix_category,
-                "generatedFix": generated_fix,
-                "codebleu": {
-                    "ngram_match_score": result['ngram_match_score'],
-                    "weighted_ngram_match_score": result['weighted_ngram_match_score'],
-                    "syntax_match": result['syntax_match_score'],
-                    "semantic_match": result['dataflow_match_score'],
-                    "codebleu_score": result['codebleu']
-                }
-            }
-        else:
-            # If no reference_code is provided, omit the CodeBLEU calculation from the response
-            response = {
-                "predictedCategory": fix_category,
-                "generatedFix": generated_fix,
-                "codebleu": None  # CodeBLEU won't be calculated
-            }
-
-        return jsonify(response)
+        # Return the generated fix
+        return jsonify({
+            "predictedCategory": fix_category,
+            "generatedFix": generated_fix,
+            "predictedCode": predicted_code
+        })
 
     except Exception as e:
-        print(f"Error occurred: {str(e)}")  # Log the error message
+        print(f"Error occurred: {str(e)}")
         return jsonify({"error": str(e)}), 500
+
+@app.route('/api/compute_codebleu', methods=['POST'])
+def api_compute_codebleu():
+    try:
+        data = request.json
+        predicted_code = data.get('predicted_code')
+        reference_code = data.get('reference_code')
+
+        if not predicted_code:
+            return jsonify({"error": "No predicted code provided"}), 400
+
+        if not reference_code:
+            return jsonify({"error": "No reference code provided"}), 400
+
+        # Calculate CodeBLEU
+        formatted_reference = reference_code.strip()
+        result = calc_codebleu([formatted_reference], [predicted_code], lang="javascript", weights=(0.10, 0.10, 0.40, 0.40), tokenizer=None)
+
+        if any(value is None for value in result.values()):
+            raise ValueError("CodeBLEU calculation returned None values.")
+
+        # Return the CodeBLEU result
+        return jsonify({
+            "codebleu": {
+                "ngram_match_score": result['ngram_match_score'],
+                "weighted_ngram_match_score": result['weighted_ngram_match_score'],
+                "syntax_match": result['syntax_match_score'],
+                "semantic_match": result['dataflow_match_score'],
+                "codebleu_score": result['codebleu']
+            }
+        })
+
+    except Exception as e:
+        print(f"Error occurred: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+    
 
 # Main entry point for the Flask app
 if __name__ == '__main__':

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import CodeFormat from "../../CodeFormat2";
-import "../FFT Content/FFTContent.scss";
+import CodeFormat from "./peft-code-format";
+import "../codebleu-page.scss";
 
 function PEFTContent() {
   const [peftGeneratedFix, setPeftGeneratedFix] = useState("");
@@ -73,32 +73,33 @@ function PEFTContent() {
   const computeCodebleu = async () => {
     setLoading(true);
     localStorage.setItem("peftLoading", true);
-
+  
     try {
       const codeForComputation = extractCodeFromFix(peftGeneratedFix);
-
-      const response = await fetch("http://localhost:5005/api/predict", {
+  
+      // Send the generated fix and reference code to compute CodeBLEU
+      const response = await fetch("http://localhost:5005/api/compute_codebleu", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          code: codeForComputation,
+          predicted_code: codeForComputation,  // Use the already generated fix
           reference_code: referenceCode,
         }),
       });
-
+  
       if (!response.ok) {
         console.error("Fetch Error:", response.statusText);
         throw new Error("Failed to compute CodeBLEU");
       }
-
+  
       const data = await response.json();
-      console.log("New CodeBLEU Results:", data); // Log new results for verification
-
-      // Set the new results directly after fetching
+      console.log("New CodeBLEU Results:", data);
+  
       setResults(data);
       localStorage.setItem("peftResults", JSON.stringify(data));
+  
     } catch (error) {
       console.error(error);
       alert("Error computing CodeBLEU. Please try again.");
@@ -106,7 +107,7 @@ function PEFTContent() {
       setLoading(false);
       localStorage.setItem("peftLoading", false);
     }
-  };
+  };  
 
   return (
     <div className="fft-content">

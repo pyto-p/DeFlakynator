@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { FaPaperPlane, FaCopy, FaCode } from "react-icons/fa";
-import CodeContent from "./CodeContent";
-import "../../src/components/Unixcoder_ui.scss";
+import CodeContent from "./code-content";
+import "../../src/components/unixcoder_ui.scss";
 import bgImage from "../components/bg-image.png";
-import { useNavigate } from "react-router-dom";
 
 function App() {
   const [code, setCode] = useState("");
@@ -18,7 +17,6 @@ function App() {
   const [peftCopySuccess, setPeftCopySuccess] = useState(false);
   const [fftCopySuccess, setFftCopySuccess] = useState(false);
   const textareaRef = useRef(null);
-  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();

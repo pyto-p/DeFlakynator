@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import CodeFormat from "../CodeFormat";
-import "./FFTContent.scss";
+import CodeFormat from "./fft-code-format";
+import "../codebleu-page.scss";
 
 function FFTContent() {
   const [generatedFix, setGeneratedFix] = useState("");
@@ -42,6 +42,9 @@ function FFTContent() {
       if (event.key === "fftResults") {
         setResults(JSON.parse(event.newValue));
       }
+      if (event.key === "fftLoading") {
+        setLoading(event.newValue === "true");
+      }
     };
 
     window.addEventListener("storage", handleStorageChange);
@@ -74,13 +77,13 @@ function FFTContent() {
     try {
       const codeForComputation = extractCodeFromFix(generatedFix);
 
-      const response = await fetch("http://localhost:5004/api/predict", {
+      const response = await fetch("http://localhost:5005/api/compute_codebleu", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          code: codeForComputation,
+          predicted_code: codeForComputation,  // Use the already generated fix
           reference_code: referenceCode,
         }),
       });
@@ -91,8 +94,11 @@ function FFTContent() {
       }
 
       const data = await response.json();
-      setResults(data); // Update results state
-      localStorage.setItem("fftResults", JSON.stringify(data)); // Update local storage
+      console.log("New CodeBLEU Results:", data);
+  
+      setResults(data);
+      localStorage.setItem("fftResults", JSON.stringify(data));
+  
     } catch (error) {
       console.error(error);
       alert("Error computing CodeBLEU. Please try again.");
@@ -100,7 +106,7 @@ function FFTContent() {
       setLoading(false);
       localStorage.setItem("fftLoading", false);
     }
-  };
+  };  
 
   return (
     <div className="fft-content">

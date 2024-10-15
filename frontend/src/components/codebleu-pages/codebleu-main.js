@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import bgImage from "../../components/bg-image.png";
-import FFTContent from "./FFT Content/FFTContent";
-import PEFTContent from "./PEFT Content/PEFTContent";
-import "../../components/codebleu page/Codebleu.scss";
+import FFTContent from "./fft-content/fft-content";
+import PEFTContent from "./peft-content/peft-content";
+import "./codebleu.scss";
 
 function Codebleu() {
   const [generatedFix, setGeneratedFix] = useState(""); // state for FFT

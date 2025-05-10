@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import CodeFormat from "./fft-code-format";
-import "../codebleu-page.scss";
+import CodeFormat from "./PEFTCodeFormat";
+import "../CodebleuPage.scss";
 
-function FFTContent() {
-  const [generatedFix, setGeneratedFix] = useState("");
+function PEFTContent() {
+  const [peftGeneratedFix, setPeftGeneratedFix] = useState("");
   const [referenceCode, setReferenceCode] = useState("");
   const [results, setResults] = useState({
     codebleu: {
@@ -17,32 +17,32 @@ function FFTContent() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const storedGeneratedFix = localStorage.getItem("generatedFix");
+    const storedGeneratedFix = localStorage.getItem("peftGeneratedFix");
     if (storedGeneratedFix) {
-      setGeneratedFix(storedGeneratedFix);
+      setPeftGeneratedFix(storedGeneratedFix);
     }
 
-    const storedReferenceCode = localStorage.getItem("fftReferenceCode");
+    const storedReferenceCode = localStorage.getItem("peftReferenceCode");
     if (storedReferenceCode) {
       setReferenceCode(storedReferenceCode);
     }
 
-    const storedResults = localStorage.getItem("fftResults");
+    const storedResults = localStorage.getItem("peftResults");
     if (storedResults) {
       setResults(JSON.parse(storedResults));
     }
 
     const handleStorageChange = (event) => {
-      if (event.key === "generatedFix") {
-        setGeneratedFix(event.newValue);
+      if (event.key === "peftGeneratedFix") {
+        setPeftGeneratedFix(event.newValue);
       }
-      if (event.key === "fftReferenceCode") {
+      if (event.key === "peftReferenceCode") {
         setReferenceCode(event.newValue);
       }
-      if (event.key === "fftResults") {
+      if (event.key === "peftResults") {
         setResults(JSON.parse(event.newValue));
       }
-      if (event.key === "fftLoading") {
+      if (event.key === "peftLoading") {
         setLoading(event.newValue === "true");
       }
     };
@@ -57,11 +57,11 @@ function FFTContent() {
   const handleReferenceCodeChange = (event) => {
     const newValue = event.target.value;
     setReferenceCode(newValue);
-    localStorage.setItem("fftReferenceCode", newValue);
+    localStorage.setItem("peftReferenceCode", newValue);
   };
 
-  const extractCodeFromFix = (generatedFix) => {
-    const codeParts = generatedFix.match(/```(.*?)```/gs);
+  const extractCodeFromFix = (peftGeneratedFix) => {
+    const codeParts = peftGeneratedFix.match(/```(.*?)```/gs);
     if (codeParts) {
       return codeParts
         .map((part) => part.replace(/```/g, "").trim())
@@ -72,12 +72,13 @@ function FFTContent() {
 
   const computeCodebleu = async () => {
     setLoading(true);
-    localStorage.setItem("fftLoading", true);
-
+    localStorage.setItem("peftLoading", true);
+  
     try {
-      const codeForComputation = extractCodeFromFix(generatedFix);
-
-      const response = await fetch("http://localhost:5004/api/compute_codebleu", {
+      const codeForComputation = extractCodeFromFix(peftGeneratedFix);
+  
+      // Send the generated fix and reference code to compute CodeBLEU
+      const response = await fetch("http://localhost:5005/api/compute_codebleu", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -87,25 +88,25 @@ function FFTContent() {
           reference_code: referenceCode,
         }),
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Fetch Error:", response.statusText, errorData);
         throw new Error(errorData.error || "Failed to compute CodeBLEU");
       }
-
+  
       const data = await response.json();
       console.log("New CodeBLEU Results:", data);
   
       setResults(data);
-      localStorage.setItem("fftResults", JSON.stringify(data));
+      localStorage.setItem("peftResults", JSON.stringify(data));
   
     } catch (error) {
       console.error(error);
       alert("Error computing CodeBLEU. Please try again.");
     } finally {
       setLoading(false);
-      localStorage.setItem("fftLoading", false);
+      localStorage.setItem("peftLoading", false);
     }
   };  
 
@@ -114,7 +115,7 @@ function FFTContent() {
       <div className="fft-layout">
         <div className="generated-fix">
           <h2>Generated Fix</h2>
-          <CodeFormat generatedFix={generatedFix} />
+          <CodeFormat peftGeneratedFix={peftGeneratedFix} />
         </div>
         <div className="reference-input">
           <h2>Reference Code</h2>
@@ -161,4 +162,4 @@ function FFTContent() {
   );
 }
 
-export default FFTContent;
+export default PEFTContent;

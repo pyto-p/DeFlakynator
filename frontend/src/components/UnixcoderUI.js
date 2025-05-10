@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { FaPaperPlane, FaCopy, FaCode, FaSignOutAlt } from "react-icons/fa";
-import CodeContent from "./code-content";
-import "../../src/components/unixcoder_ui.scss";
-import bgImage from "../components/bg-image.png";
+import CodeContent from "./CodeContent";
+import "./UnixcoderUI.scss";
+import bgImage from "./bg-image.png";
 import { useNavigate } from "react-router-dom";
 
 function App() {
@@ -147,7 +147,7 @@ function App() {
             <h1>Welcome to DeFlakynator</h1>
             <p className="welcome-caption">
               Having trouble with async await flaky JavaScript tests? <br />
-              Enter your code below, and we’ll deflake it for you.
+              Enter your code below, and we'll deflake it for you.
             </p>
             <button className="logout-btn" onClick={handleLogout}>
               <FaSignOutAlt className="logout-icon" />

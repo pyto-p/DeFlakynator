@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./loginpage.scss"; 
-import bgImage from "../components/bg-image.png";
+import "./LoginPage.scss"; 
+import bgImage from "./bg-image.png";
 
 function LoginPage() {
   const [email, setEmail] = useState("");

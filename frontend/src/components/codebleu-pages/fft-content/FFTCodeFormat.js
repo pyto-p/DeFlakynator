@@ -2,16 +2,16 @@ import React from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { nightOwl } from "react-syntax-highlighter/dist/esm/styles/prism";
 
-const CodeContent = ({ peftGeneratedFix, loading }) => {
+const CodeContent = ({ generatedFix, loading }) => {
   return (
     <div className={`code-content ${loading ? "loading-active" : ""}`}>
       {loading ? (
         <p className="loading-text">Generating fix...</p>
       ) : (
         <>
-          {peftGeneratedFix ? (
+          {generatedFix ? (
             <>
-              {peftGeneratedFix
+              {generatedFix
                 .split(
                   /(\/\/.*|\/\*[\s\S]*?\*\/|```[\s\S]*?```|`[^`]*`)/ // Removed explanation handling regex
                 )
@@ -56,7 +56,19 @@ const CodeContent = ({ peftGeneratedFix, loading }) => {
                     part.trim().startsWith("`") &&
                     part.trim().endsWith("`")
                   ) {
-                    const inlineCode = part.slice(1, -1).trim(); // Remove single backticks
+                    return (
+                      <code
+                        key={`inline-${index}`}
+                        style={{
+                          backgroundColor: "#2d2d2d",
+                          padding: "2px 4px",
+                          borderRadius: "3px",
+                          color: "#e6e6e6",
+                        }}
+                      >
+                        {part.slice(1, -1).trim()}
+                      </code>
+                    );
                   }
                   // Ignore other parts (explanations or plain text)
                   return null;

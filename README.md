@@ -49,6 +49,11 @@ The project is organized into two main components:
    pip install -r requirements.txt
    ```
 
+4. Install tree-sitter JavaScript parser (required for CodeBLEU calculation):
+   ```bash
+   pip install tree-sitter-javascript
+   ```
+
 ### Frontend Setup
 
 1. Navigate to the frontend directory:

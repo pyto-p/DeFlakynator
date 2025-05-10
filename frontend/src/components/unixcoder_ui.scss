@@ -68,7 +68,6 @@ body {
       display: flex;
       flex-direction: column;
       flex-grow: 1;
-      margin-right: -50px;
 
       h1 {
         margin-top: -25px;
@@ -474,4 +473,43 @@ body {
   .code-box {
     width: 620px;
   }
+}
+
+p.welcome-caption {
+  font-size: 1.5rem;
+  color: #a1a0a0;
+  line-height: 1.8rem;
+}
+
+.error-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: -10px; /* Adjust this value to move error closer or farther from input */
+}
+
+.error-message {
+  color: red;
+  font-size: 14px;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.logout-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background-color: #dc354600;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logout-icon {
+  font-size: 20px;
 }

@@ -158,7 +158,7 @@ def create_prompt(retrieved_examples, test_case, fix_category):
     """
     prompt = f"""You are an expert code repair assistant specializing in fixing flaky async/await tests. 
     Please apply the {fix_category} method to resolve the issue in the provided test case: {test_case}. 
-    Make the fixed version of the flaky test similar to the fixed version of retrieved examples. 
+    Make the fixed version of the flaky test similar to the fixed version of {retrieved_examples} but not very smilar please. 
     Follow this format in your response: 
     
     ``` <javascript>

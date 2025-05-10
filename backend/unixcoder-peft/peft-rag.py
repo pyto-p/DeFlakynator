@@ -1,6 +1,12 @@
 import os
+import sys
 import re
 import torch
+
+# Add the backend directory to the Python path
+backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(backend_dir)
+
 from transformers import RobertaForSequenceClassification, RobertaTokenizerFast, AutoModel
 from codebleu import calc_codebleu
 from common.classification.dataset import load_dataset
@@ -20,7 +26,7 @@ model, tokenizer = None, None
 # Load the fine-tuned model and tokenizer
 def load_model_and_tokenizer():
     global model, tokenizer
-    save_directory = './trained_model_og/peft_unixcoder'
+    save_directory = './trained_model/peft_unixcoder'
 
     if os.path.exists(save_directory):
         print("Loading the saved fine-tuned model...")

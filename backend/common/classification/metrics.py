@@ -7,7 +7,6 @@ def compute_metrics(eval_pred):
     logits = torch.tensor(logits)
 
     predictions = torch.argmax(logits, dim=-1)
-    # breakpoint()
 
     accuracy = accuracy_score(labels, predictions.numpy())
 

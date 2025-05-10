@@ -1,0 +1,106 @@
+/* LoginPage.css */
+$bg-color: #15191df2;
+$text-color: #e1e8f5;
+$input-bg: #212529;
+$input-border: #313b4b;
+$input-focus: #4a90e2;
+$button-bg: #4a90e2;
+$button-hover-bg: darken($button-bg, 10%);
+$button-text-color: white;
+$error-color: red;
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', sans-serif;
+  background-color: $bg-color;
+  color: $text-color;
+}
+
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: $bg-color;
+}
+
+.login-box {
+  background-color: $input-bg;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.1);
+  width: 350px;
+  text-align: center;
+  border: 1px solid $input-border;
+}
+
+h2 {
+  margin-bottom: 20px;
+  color: $text-color;
+}
+
+.login-form .input-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.login-form label {
+  display: block;
+  font-size: 14px;
+  color: $text-color;
+  margin-bottom: 5px;
+}
+
+.login-form input {
+  width: 330px;
+  padding: 10px;
+  border: 1px solid $input-border;
+  border-radius: 5px;
+  background-color: $input-bg;
+  color: $text-color;
+  font-size: 16px;
+}
+
+.login-form input:focus {
+  border-color: $input-focus;
+  outline: none;
+  box-shadow: 0 0 10px lighten($input-focus, 20%);
+}
+
+.login-btn {
+  background-color: $button-bg;
+  color: $button-text-color;
+  padding: 10px;
+  width: 100%;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 10px;
+  transition: background-color 0.3s;
+}
+
+.login-btn:hover {
+  background-color: $button-hover-bg;
+}
+
+.error-message {
+  color: $error-color;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.login-footer {
+  margin-top: 20px;
+  font-size: 12px;
+  color: lighten($text-color, 20%);
+}
+
+.input-group {
+  width: 100%;
+}
+
+.input-group input {
+  // width: 100%;
+}

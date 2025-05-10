@@ -77,7 +77,7 @@ function FFTContent() {
     try {
       const codeForComputation = extractCodeFromFix(generatedFix);
 
-      const response = await fetch("http://localhost:5005/api/compute_codebleu", {
+      const response = await fetch("http://localhost:5004/api/compute_codebleu", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -89,8 +89,9 @@ function FFTContent() {
       });
 
       if (!response.ok) {
-        console.error("Fetch Error:", response.statusText);
-        throw new Error("Failed to compute CodeBLEU");
+        const errorData = await response.json();
+        console.error("Fetch Error:", response.statusText, errorData);
+        throw new Error(errorData.error || "Failed to compute CodeBLEU");
       }
 
       const data = await response.json();
@@ -130,15 +131,18 @@ function FFTContent() {
       </div>
 
       <div className="results">
-        <h2>Results:</h2>
+        <h2>CodeBLEU Score: 
+        {" "}
+        {(results.codebleu.codebleu_score * 100).toFixed(2)}%
+        </h2>
         {results.codebleu ? (
           <>
             <p>
-              Ngram Match Score:{" "}
+              N-Gram Match Score:{" "}
               {(results.codebleu.ngram_match_score * 100).toFixed(2)}%
             </p>
             <p>
-              Weighted Ngram Match Score:{" "}
+              Weighted N-Gram Match Score:{" "}
               {(results.codebleu.weighted_ngram_match_score * 100).toFixed(2)}%
             </p>
             <p>
@@ -147,10 +151,6 @@ function FFTContent() {
             <p>
               Semantic Match:{" "}
               {(results.codebleu.semantic_match * 100).toFixed(2)}%
-            </p>
-            <p>
-              CodeBLEU Score:{" "}
-              {(results.codebleu.codebleu_score * 100).toFixed(2)}%
             </p>
           </>
         ) : (

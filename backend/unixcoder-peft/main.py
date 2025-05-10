@@ -8,6 +8,8 @@ from codebleu import calc_codebleu
 from peft import get_peft_model, LoraConfig, TaskType
 import torch
 from transformers import RobertaForSequenceClassification, RobertaTokenizerFast, Trainer, TrainingArguments, AutoModel
+import random
+import numpy as np
 
 # Local Relative Imports
 from common.classification.dataset import load_dataset
@@ -17,13 +19,16 @@ from common.classification.prediction import predict_fix_category
 from common.classification.metrics import compute_metrics
 from common.generation.rag_generator import build_faiss_index, rag_generate_solution, setup_llama
 
+torch.manual_seed(3)
+random.seed(3)
+np.random.seed(3)
 
 device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 
-dataset_path = '../data/50-input_output.json'
+dataset_path = '../data/6000-merged_dataset.json'
 raw_dataset = load_dataset(dataset_path)
 
-save_directory = './trained_model_og/peft_unixcoder'
+save_directory = './trained_model/peft_unixcoder'
 
 if os.path.exists(save_directory):
     print("Loading the saved fine-tuned model...")
@@ -46,9 +51,9 @@ else:
     peft_config = LoraConfig(
         task_type=TaskType.SEQ_CLS,  # For sequence-to-sequence tasks like code generation
         inference_mode=False,             # Enable training mode
-        r=8,                              # The rank of the LoRA approximation
-        lora_alpha=32,                    # The scaling factor for LoRA
-        lora_dropout=0.1,                 # Dropout to avoid overfitting
+        r=16,                              # The rank of the LoRA approximation
+        lora_alpha=64,                    # The scaling factor for LoRA
+        lora_dropout=0.05,                 # Dropout to avoid overfitting
     )
 
     model = get_peft_model(model, peft_config)
@@ -62,17 +67,17 @@ else:
         output_dir="./results",
         eval_strategy="epoch",
         save_strategy="epoch",
-        learning_rate=2e-5,
-        per_device_train_batch_size=4,
-        per_device_eval_batch_size=4,
-        num_train_epochs=3,
+        learning_rate=1e-5,
+        per_device_train_batch_size=8,
+        per_device_eval_batch_size=8,
+        num_train_epochs=10,
         weight_decay=0.01,
         logging_dir='./logs',
         logging_steps=10,
         save_steps=500,
         save_total_limit=2,
         load_best_model_at_end=True,
-        metric_for_best_model="f1" # or f1-score
+        metric_for_best_model="f1"
     )
 
     trainer = Trainer(
@@ -114,63 +119,63 @@ while True:
     output = predict_fix_category(user_input, model, tokenizer, device)
     print(f"\nPredicted Fix Category: \n{output}")
 
-    dataset = load_dataset('../data/6000-merged_dataset.json')
+    # dataset = load_dataset('../data/6000-merged_dataset.json')
 
-    tokenizer = RobertaTokenizerFast.from_pretrained('microsoft/unixcoder-base')
-    model = AutoModel.from_pretrained('microsoft/unixcoder-base')
+    # tokenizer = RobertaTokenizerFast.from_pretrained('microsoft/unixcoder-base')
+    # model = AutoModel.from_pretrained('microsoft/unixcoder-base')
 
-    os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+    # os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
-    faiss_index, indexed_data = build_faiss_index(dataset, model, tokenizer, index_file="faiss_index.bin", data_file="indexed_data.pkl")
+    # faiss_index, indexed_data = build_faiss_index(dataset, model, tokenizer, index_file="faiss_index.bin", data_file="indexed_data.pkl")
 
-    llama_model = setup_llama()
+    # llama_model = setup_llama()
 
-    test_case = user_input
+    # test_case = user_input
 
-    fix_category = output
+    # fix_category = output
 
-    try:
-        generated_fix = rag_generate_solution(test_case, fix_category, model, tokenizer, faiss_index, indexed_data, llama_model)
+    # try:
+    #     generated_fix = rag_generate_solution(test_case, fix_category, model, tokenizer, faiss_index, indexed_data, llama_model)
   
-        print(generated_fix)  
+    #     print(generated_fix)  
 
-        print('\n\n')
-        print("Enter your reference code (press Enter twice when done):")
+    #     print('\n\n')
+    #     print("Enter your reference code (press Enter twice when done):")
 
-        # Reading multiline input from the user
-        reference_code = []
-        while True:
-            line = input()
-            if line == "":
-                break
-            reference_code.append(line)
+    #     # Reading multiline input from the user
+    #     reference_code = []
+    #     while True:
+    #         line = input()
+    #         if line == "":
+    #             break
+    #         reference_code.append(line)
 
-        # Join the lines into a single code block
-        formatted_reference = "\n".join(reference_code)
+    #     # Join the lines into a single code block
+    #     formatted_reference = "\n".join(reference_code)
 
-        predicted_code = re.findall(r"```(.*?)```", generated_fix, re.DOTALL)
+    #     predicted_code = re.findall(r"```(.*?)```", generated_fix, re.DOTALL)
 
-        if predicted_code:
-            predicted_code = predicted_code[0].strip()  # Take the first block and strip whitespace
-        else:
-            predicted_code = ""  # Handle case where no code block is found
+    #     if predicted_code:
+    #         predicted_code = predicted_code[0].strip()  # Take the first block and strip whitespace
+    #     else:
+    #         predicted_code = ""  # Handle case where no code block is found
 
-        predicted_code = predicted_code.replace('javascript', '')
-        print('predicted: ', predicted_code)
-        print('reference: ', formatted_reference)
-        result = calc_codebleu([formatted_reference], [predicted_code], lang="javascript", weights=(0.10, 0.10, 0.40, 0.40), tokenizer=None)
+    #     predicted_code = predicted_code.replace('javascript', '')
+    #     print('predicted: ', predicted_code)
+    #     print('reference: ', formatted_reference)
+    #     result = calc_codebleu([formatted_reference], [predicted_code], lang="javascript", weights=(0.10, 0.10, 0.40, 0.40), tokenizer=None)
 
-        print('+------------------------------------------------------------+')
-        print('Ngram Match Score: ' , result['ngram_match_score'] * 100 , '%')
-        print('+------------------------------------------------------------+')
-        print('Weighted Ngram Match Score: ' , result['weighted_ngram_match_score'] * 100 , '%')
-        print('+------------------------------------------------------------+')
-        print('Syntax Match : ' , result['syntax_match_score'] * 100 , '%')
-        print('+------------------------------------------------------------+')
-        print('Semantic Match: ' , result['dataflow_match_score'] * 100 , '%')
-        print('+------------------------------------------------------------+')
-        print('Codebleu Score: ' , result['codebleu'] * 100 , '%')
-        print('+------------------------------------------------------------+')
+    #     print('+------------------------------------------------------------+')
+    #     print('Ngram Match Score: ' , result['ngram_match_score'] * 100 , '%')
+    #     print('+------------------------------------------------------------+')
+    #     print('Weighted Ngram Match Score: ' , result['weighted_ngram_match_score'] * 100 , '%')
+    #     print('+------------------------------------------------------------+')
+    #     print('Syntax Match : ' , result['syntax_match_score'] * 100 , '%')
+    #     print('+------------------------------------------------------------+')
+    #     print('Semantic Match: ' , result['dataflow_match_score'] * 100 , '%')
+    #     print('+------------------------------------------------------------+')
+    #     print('Codebleu Score: ' , result['codebleu'] * 100 , '%')
+    #     print('+------------------------------------------------------------+')
 
-    except Exception as e:
-        print(f"Error in generating fix: {e}")
+    # except Exception as e:
+    #     print(f"Error in generating fix: {e}")

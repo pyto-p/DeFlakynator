@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { FaPaperPlane, FaCopy, FaCode } from "react-icons/fa";
+import { FaPaperPlane, FaCopy, FaCode, FaSignOutAlt } from "react-icons/fa";
 import CodeContent from "./code-content";
 import "../../src/components/unixcoder_ui.scss";
 import bgImage from "../components/bg-image.png";
+import { useNavigate } from "react-router-dom";
 
 function App() {
+  const navigate = useNavigate();
+
   const [code, setCode] = useState("");
   const [predictedCategory, setPredictedCategory] = useState("");
   const [generatedFix, setGeneratedFix] = useState("");
@@ -18,6 +21,10 @@ function App() {
   const [fftCopySuccess, setFftCopySuccess] = useState(false);
   const textareaRef = useRef(null);
 
+  const handleLogout = () => {
+    navigate("/login"); // Redirect to login page
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setPredictedCategory("");
@@ -27,6 +34,22 @@ function App() {
     setError("");
     setLoading(true);
     setShowPrediction(true);
+
+    // Async, await, and test case validation patterns
+    const asyncPattern = /async/;
+    const awaitPattern = /await/;
+    const testPattern = /\b(test|it)\s*\(.*=>/;
+
+    if (
+      !asyncPattern.test(code) &&
+      !awaitPattern.test(code) &&
+      !testPattern.test(code)
+    ) {
+      setError("Please enter a valid JavaScript async test case.");
+      setLoading(false);
+      setShowPrediction(false);
+      return;
+    }
 
     try {
       const response = await axios.post("http://localhost:5004/api/predict", {
@@ -53,7 +76,7 @@ function App() {
     }
   };
 
-  // submit using enter key
+  // Submit using enter key
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -61,9 +84,8 @@ function App() {
     }
   };
 
-  // copy code
+  // Copy code
   const copyToClipboard = (text, type) => {
-    // Extract code enclosed in triple backticks
     const codeMatches = text.match(/```(.*?)```/s);
     const codeToCopy = codeMatches
       ? codeMatches[1].replace(/^\S+\n/, "").trim()
@@ -85,7 +107,7 @@ function App() {
       });
   };
 
-  // adjust text area height
+  // Adjust textarea height
   const adjustTextareaHeight = () => {
     const textarea = textareaRef.current;
     textarea.style.height = "60px";
@@ -102,13 +124,10 @@ function App() {
     adjustTextareaHeight();
   }, []);
 
-  // / Function to open /codebleu in a new tab
+  // Function to open /codebleu in a new tab
   function openCodebleuPage() {
-    // Save the generatedFix and peftGeneratedFix to localStorage
     localStorage.setItem("generatedFix", generatedFix);
     localStorage.setItem("peftGeneratedFix", peftGeneratedFix);
-
-    // Open the Codebleu page in a new tab
     window.open("/codebleu", "_blank");
   }
 
@@ -125,27 +144,29 @@ function App() {
       <div className="app-container">
         {!showPrediction ? (
           <div className="welcome-message">
-            <h1>Welcome to UnixCoder Fix Predictor</h1>
-            <p>
-              Enter your JavaScript code below, and we'll predict the fix
-              category for you!
+            <h1>Welcome to DeFlakynator</h1>
+            <p className="welcome-caption">
+              Having trouble with async await flaky JavaScript tests? <br />
+              Enter your code below, and we’ll deflake it for you.
             </p>
+            <button className="logout-btn" onClick={handleLogout}>
+              <FaSignOutAlt className="logout-icon" />
+            </button>
           </div>
         ) : (
           <div className="prediction-container">
+            <button className="logout-btn" onClick={handleLogout}>
+              <FaSignOutAlt className="logout-icon" />
+            </button>
             <div className="header-container">
               <div className="text-container">
-                <h1>UnixCoder Fix Predictor</h1>
-                <p>
-                  Enter your JavaScript code below to get the predicted fix
-                  category and generated fix.
-                </p>
+                <h1>DeFlakynator</h1>
               </div>
               <button className="codebleu-btn" onClick={openCodebleuPage}>
                 <span className="display-icon">
                   <FaCode />
                 </span>
-                <span className="full-text">CodeBleau</span>
+                <span className="full-text">CodeBLEU</span>
               </button>
             </div>
             <div className="prediction-area">
@@ -215,6 +236,13 @@ function App() {
           </div>
         )}
 
+        {/* Error message */}
+        {error && (
+          <div className="error-container">
+            <p className="error-message">{error}</p>
+          </div>
+        )}
+
         {/* Input form */}
         <form className="input-form" onSubmit={handleSubmit}>
           <textarea
@@ -232,8 +260,6 @@ function App() {
             <FaPaperPlane />
           </button>
         </form>
-
-        {error && <p style={{ color: "red" }}>{error}</p>}
       </div>
     </div>
   );

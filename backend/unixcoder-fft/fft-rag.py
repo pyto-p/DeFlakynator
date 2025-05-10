@@ -1,10 +1,18 @@
 import os
+import sys
+import re
 import torch
 from codebleu import calc_codebleu
 from transformers import RobertaForSequenceClassification, RobertaTokenizerFast, AutoModel
+
+# Add the backend directory to the Python path
+backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(backend_dir)
+
 from common.classification.dataset import load_dataset
 from common.classification.prediction import predict_fix_category
 from common.generation.rag_generator import build_faiss_index, rag_generate_solution, setup_llama
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import warnings
@@ -24,11 +32,11 @@ model, tokenizer = None, None
 # Load the fine-tuned model and tokenizer
 def load_model_and_tokenizer():
     global model, tokenizer
-    save_directory = './trained_model_og/fft_unixcoder'
+    save_directory = './trained_model/fft_unixcoder'
 
     if os.path.exists(save_directory):
         print("Loading the saved fine-tuned model...")
-        model = RobertaForSequenceClassification.from_pretrained(save_directory).to(device)
+        model = RobertaForSequenceClassification.from_pretrained(save_directory, num_labels=6).to(device)
         tokenizer = RobertaTokenizerFast.from_pretrained(save_directory)
         print("Model and tokenizer are ready for use.")
     else:

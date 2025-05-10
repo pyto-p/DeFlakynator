@@ -2,12 +2,19 @@ import React, { useEffect, useState } from "react";
 import bgImage from "../../components/bg-image.png";
 import FFTContent from "./fft-content/fft-content";
 import PEFTContent from "./peft-content/peft-content";
+import { FaArrowLeft } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 import "./codebleu.scss";
 
 function Codebleu() {
   const [generatedFix, setGeneratedFix] = useState(""); // state for FFT
   const [peftGeneratedFix, setPeftGeneratedFix] = useState(""); //state for PEFT
   const [selectedButton, setSelectedButton] = useState("peft"); // Default button state
+  const navigate = useNavigate();
+  
+  const handleBack = () => {
+    navigate("/unixcoder"); // Redirect to login page
+  };
 
   useEffect(() => {
     const storedGeneratedFix = localStorage.getItem("generatedFix");
@@ -53,11 +60,15 @@ function Codebleu() {
       }}
     >
       <div className="codebleu-container">
+        <button className="back-btn" onClick={handleBack}>
+          <FaArrowLeft className="back-icon" />
+          Back
+        </button>
         <div className="codebleu-header-container">
           <div className="codebleu-text-container">
-            <h1>Codeblue Computation</h1>
+            <h1>CodeBLEU Computation</h1>
             <p>
-              Ngram Match Score, Weighted Ngram Match Score, Syntax Match,
+              N-Gram Match Score, Weighted N-Gram Match Score, Syntax Match,
               Semantic Match, & CodeBLEU Score
             </p>
           </div>

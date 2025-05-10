@@ -7,6 +7,8 @@ import re
 from codebleu import calc_codebleu
 import torch
 from transformers import RobertaForSequenceClassification, RobertaTokenizerFast, Trainer, TrainingArguments, AutoModel
+import random
+import numpy as np
 
 # Local Relative Imports
 from common.classification.dataset import load_dataset
@@ -16,9 +18,13 @@ from common.classification.prediction import predict_fix_category
 from common.classification.metrics import compute_metrics
 from common.generation.rag_generator import build_faiss_index, rag_generate_solution, setup_llama
 
+torch.manual_seed(10)
+random.seed(10)
+np.random.seed(10)
+
 device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 
-dataset_path = '../data/50-input_output.json'
+dataset_path = '../data/6000-merged_dataset.json'
 raw_dataset = load_dataset(dataset_path)
 
 save_directory = './trained_model/fft_unixcoder'
@@ -26,7 +32,7 @@ save_directory = './trained_model/fft_unixcoder'
 if os.path.exists(save_directory):
     print("Loading the saved fine-tuned model...")
 
-    model = RobertaForSequenceClassification.from_pretrained(save_directory)
+    model = RobertaForSequenceClassification.from_pretrained(save_directory, num_labels=6)
 
     tokenizer = RobertaTokenizerFast.from_pretrained(save_directory)
     model.to(device)
@@ -49,10 +55,10 @@ else:
         output_dir="./results",
         eval_strategy="epoch",
         save_strategy="epoch",
-        learning_rate=2e-5,
-        per_device_train_batch_size=4,
-        per_device_eval_batch_size=4,
-        num_train_epochs=3,
+        learning_rate=1e-5,
+        per_device_train_batch_size=8,
+        per_device_eval_batch_size=8,
+        num_train_epochs=10,
         weight_decay=0.01,
         logging_dir='./logs',
         logging_steps=10,
@@ -101,7 +107,7 @@ while True:
     output = predict_fix_category(user_input, model, tokenizer, device)
     print(f"\nPredicted Fix Category: \n{output}")
 
-    dataset = load_dataset('./dataset/6000-merged_dataset.json') 
+    dataset = load_dataset('../data/6000-merged_dataset.json') 
 
     tokenizer = RobertaTokenizerFast.from_pretrained('microsoft/unixcoder-base')
     model = AutoModel.from_pretrained('microsoft/unixcoder-base')

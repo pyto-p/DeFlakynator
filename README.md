@@ -2,6 +2,16 @@
 
 DeFlakynator is a tool designed to identify, analyze, and fix flaky tests in JavaScript software projects. It combines machine learning techniques with Generative AI to not only detect problematic test cases but also provide automated fixes for them.
 
+## Team
+
+### Project Lead
+- Sebastian Audrey Temporal (@pyto-p)
+
+### Developers
+- Adrian Rafael Abelligos
+- Shania Faith Ramos (@shaniassi)
+- Bernard Angelo Resurrecion (@brnrdrsrrccn)
+
 ## Project Structure
 
 The project is organized into two main components:

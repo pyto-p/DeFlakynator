@@ -1,24 +1,24 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FaPaperPlane, FaCopy, FaCode, FaSignOutAlt } from "react-icons/fa";
-import CodeContent from "./CodeContent";
-import "./UnixcoderUI.scss";
-import bgImage from "./bg-image.png";
-import { useNavigate } from "react-router-dom";
+import CodeContent from "../../components/CodeContent";
+import bgImage from "../../assets/bg-image.png";
+import "./HomePageStyle.scss";
 
-function App() {
+function HomePage() {
   const navigate = useNavigate();
 
   const [code, setCode] = useState("");
-  const [predictedCategory, setPredictedCategory] = useState("");
-  const [generatedFix, setGeneratedFix] = useState("");
-  const [peftPredictedCategory, setPeftPredictedCategory] = useState("");
-  const [peftGeneratedFix, setPeftGeneratedFix] = useState("");
+  const [FFTGeneratedFix, setFFTGeneratedFix] = useState("");
+  const [FFTPredictedCategory, setFFTPredictedCategory] = useState("");
+  const [PEFTGeneratedFix, setPEFTGeneratedFix] = useState("");
+  const [PEFTPredictedCategory, setPEFTPredictedCategory] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPrediction, setShowPrediction] = useState(false);
-  const [peftCopySuccess, setPeftCopySuccess] = useState(false);
-  const [fftCopySuccess, setFftCopySuccess] = useState(false);
+  const [PEFTCopySuccess, setPEFTCopySuccess] = useState(false);
+  const [FFTCopySuccess, setFFTCopySuccess] = useState(false);
   const textareaRef = useRef(null);
 
   const handleLogout = () => {
@@ -27,10 +27,10 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setPredictedCategory("");
-    setGeneratedFix("");
-    setPeftPredictedCategory("");
-    setPeftGeneratedFix("");
+    setFFTPredictedCategory("");
+    setFFTGeneratedFix("");
+    setPEFTPredictedCategory("");
+    setPEFTGeneratedFix("");
     setError("");
     setLoading(true);
     setShowPrediction(true);
@@ -63,10 +63,10 @@ function App() {
         }
       );
 
-      setPredictedCategory(response.data.predictedCategory);
-      setGeneratedFix(response.data.generatedFix);
-      setPeftPredictedCategory(peftResponse.data.predictedCategory);
-      setPeftGeneratedFix(peftResponse.data.generatedFix);
+      setFFTPredictedCategory(response.data.predictedCategory);
+      setFFTGeneratedFix(response.data.generatedFix);
+      setPEFTPredictedCategory(peftResponse.data.predictedCategory);
+      setPEFTGeneratedFix(peftResponse.data.generatedFix);
 
       setShowPrediction(true);
     } catch (err) {
@@ -94,12 +94,12 @@ function App() {
     navigator.clipboard
       .writeText(codeToCopy)
       .then(() => {
-        if (type === "peft") {
-          setPeftCopySuccess(true);
-          setTimeout(() => setPeftCopySuccess(false), 2000);
-        } else if (type === "fft") {
-          setFftCopySuccess(true);
-          setTimeout(() => setFftCopySuccess(false), 2000);
+        if (type === "PEFT") {
+          setPEFTCopySuccess(true);
+          setTimeout(() => setPEFTCopySuccess(false), 2000);
+        } else if (type === "FFT") {
+          setFFTCopySuccess(true);
+          setTimeout(() => setFFTCopySuccess(false), 2000);
         }
       })
       .catch((err) => {
@@ -126,8 +126,8 @@ function App() {
 
   // Function to open /codebleu in a new tab
   function openCodebleuPage() {
-    localStorage.setItem("generatedFix", generatedFix);
-    localStorage.setItem("peftGeneratedFix", peftGeneratedFix);
+    localStorage.setItem("FFTGeneratedFix", FFTGeneratedFix);
+    localStorage.setItem("PEFTGeneratedFix", PEFTGeneratedFix);
     window.open("/codebleu", "_blank");
   }
 
@@ -180,7 +180,7 @@ function App() {
                   <p className="predicted-output">
                     {loading
                       ? "Predicting..."
-                      : peftPredictedCategory ||
+                      : PEFTPredictedCategory ||
                         "Predicted fix category will go here."}
                   </p>
                 </div>
@@ -190,14 +190,14 @@ function App() {
                     <span className="language-label">JavaScript</span>
                     <button
                       className="copy-button"
-                      onClick={() => copyToClipboard(peftGeneratedFix, "peft")}
+                      onClick={() => copyToClipboard(PEFTGeneratedFix, "PEFT")}
                     >
-                      {peftCopySuccess ? "Copied!" : "Copy Code"}
+                      {PEFTCopySuccess ? "Copied!" : "Copy Code"}
                       <FaCopy />
                     </button>
                   </div>
                   <CodeContent
-                    generatedFix={peftGeneratedFix}
+                    generatedFix={PEFTGeneratedFix}
                     loading={loading}
                   />
                 </div>
@@ -213,7 +213,7 @@ function App() {
                   <p className="predicted-output">
                     {loading
                       ? "Predicting..."
-                      : predictedCategory ||
+                      : FFTPredictedCategory ||
                         "Predicted fix category will go here."}
                   </p>
                 </div>
@@ -223,13 +223,16 @@ function App() {
                     <span className="language-label">JavaScript</span>
                     <button
                       className="copy-button"
-                      onClick={() => copyToClipboard(generatedFix, "fft")}
+                      onClick={() => copyToClipboard(FFTGeneratedFix, "FFT")}
                     >
-                      {fftCopySuccess ? "Copied!" : "Copy Code"}
+                      {FFTCopySuccess ? "Copied!" : "Copy Code"}
                       <FaCopy />
                     </button>
                   </div>
-                  <CodeContent generatedFix={generatedFix} loading={loading} />
+                  <CodeContent
+                    generatedFix={FFTGeneratedFix}
+                    loading={loading}
+                  />
                 </div>
               </div>
             </div>
@@ -265,4 +268,4 @@ function App() {
   );
 }
 
-export default App;
+export default HomePage;

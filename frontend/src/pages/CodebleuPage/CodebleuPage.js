@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import bgImage from "../bg-image.png";
-import FFTContent from "./fft-content/FFTContent";
-import PEFTContent from "./peft-content/PEFTContent";
+import bgImage from "../../assets/bg-image.png";
+import FFTContent from "../../components/FFTContent";
+import PEFTContent from "../../components/PEFTContent";
 import { FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import "./Codebleu.scss";
+import "./CodebleuPageStyle.scss";
 
-function Codebleu() {
+function CodebleuPage() {
   const [selectedButton, setSelectedButton] = useState("peft"); // Default button state
   const navigate = useNavigate();
   
@@ -73,4 +73,4 @@ function Codebleu() {
   );
 }
 
-export default Codebleu;
+export default CodebleuPage;

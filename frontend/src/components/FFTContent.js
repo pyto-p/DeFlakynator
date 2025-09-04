@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import CodeFormat from "./FFTCodeFormat";
-import "../CodebleuPage.scss";
+import "./CodebleuPage.scss";
 
 function FFTContent() {
   const [generatedFix, setGeneratedFix] = useState("");

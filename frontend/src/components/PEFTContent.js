@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import CodeFormat from "./PEFTCodeFormat";
-import "../CodebleuPage.scss";
+import "./CodebleuPage.scss";
 
 function PEFTContent() {
   const [peftGeneratedFix, setPeftGeneratedFix] = useState("");
